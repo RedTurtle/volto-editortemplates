@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<object xmlns:i18n="http://xml.zope.org/namespaces/i18n"
+        name="portal_controlpanel"
+        i18n:domain="collective.voltoeditortemplates"
+>
+
+  <!-- -*- extra stuff goes here -*- -->
+  <configlet action_id="volto-editor-templates-settings"
+             appId="volto-editor-templates-settings"
+             category="Products"
+             condition_expr=""
+             icon_expr=""
+             title="Editor templates"
+             url_expr="string:${portal_url}/@@volto-editor-templates-settings"
+             visible="True"
+             i18n:attributes="title"
+  >
+    <permission>Manage portal</permission>
+  </configlet>
+
+</object>

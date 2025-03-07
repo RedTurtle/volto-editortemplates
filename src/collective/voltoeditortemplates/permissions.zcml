@@ -1,0 +1,33 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="collective.voltoeditortemplates"
+    >
+
+  <!-- -*- extra stuff goes here -*- -->
+  <configure zcml:condition="installed AccessControl.security">
+    <permission
+        id="collective.voltoeditortemplates.DeleteTemplates"
+        title="collective.voltoeditortemplates: Delete Templates"
+        />
+    <permission
+        id="collective.voltoeditortemplates.AccessTemplates"
+        title="collective.voltoeditortemplates: Access Templates"
+        />
+    <permission
+        id="collective.voltoeditortemplates.TemplatesOverview"
+        title="collective.voltoeditortemplates: Templates Overview"
+        />
+    <permission
+        id="collective.voltoeditortemplates.ShowDeletedTemplates"
+        title="collective.voltoeditortemplates: Show Deleted Templates"
+        />
+    <permission
+        id="collective.voltoeditortemplates.UpdateTemplates"
+        title="collective.voltoeditortemplates: Update Templates"
+        />
+
+  </configure>
+
+</configure>

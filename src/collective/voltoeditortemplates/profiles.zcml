@@ -1,0 +1,32 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
+    i18n_domain="collective.voltoeditortemplates"
+    >
+
+  <genericsetup:registerProfile
+      name="default"
+      title="volto.editortemplates: Install"
+      description="Package to configure a new volto.editortemplates site"
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      directory="profiles/default"
+      />
+
+  <genericsetup:registerProfile
+      name="uninstall"
+      title="volto.editortemplates: Uninstall"
+      description="Uninstall volto.editortemplates setup."
+      provides="Products.GenericSetup.interfaces.EXTENSION"
+      directory="profiles/uninstall"
+      />
+
+  <!-- Hide Uninstall Profile-->
+  <utility
+      factory=".setuphandlers.HiddenProfiles"
+      name="collective.voltoeditortemplates"
+      />
+
+
+  <include package=".upgrades" />
+
+</configure>

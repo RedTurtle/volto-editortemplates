@@ -1,0 +1,15 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    >
+
+  <include package="plone.restapi" />
+  <include package=".blocks" />
+
+  <adapter
+      factory=".controlpanels.CollectiveVoltoEditorTemplatesSettings"
+      provides="collective.voltoeditortemplates.controlpanel.settings.IVoltoEditorTemplatesSettingsControlpanel"
+      name="volto-editor-templates-settings"
+      />
+
+</configure>

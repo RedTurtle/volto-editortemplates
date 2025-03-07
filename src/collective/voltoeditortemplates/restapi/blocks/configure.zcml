@@ -1,0 +1,41 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:plone="http://namespaces.plone.org/plone"
+    xmlns:zcml="http://namespaces.zope.org/zcml"
+    i18n_domain="collective.voltoeditortemplates"
+    >
+
+  <plone:service
+      method="POST"
+        for="plone.app.layout.navigation.interfaces.INavigationRoot"
+      factory=".services.AddBlockTemplate"
+      permission="cmf.ManagePortal"
+      layer="collective.voltoeditortemplates.interfaces.IVoltoEditorTemplatesLayer"
+      name="@block-template"
+      />
+  <plone:service
+      method="GET"
+      factory=".services.GetBlockTemplates"
+      for="plone.app.layout.navigation.interfaces.INavigationRoot"
+      permission="zope2.View"
+      layer="collective.voltoeditortemplates.interfaces.IVoltoEditorTemplatesLayer"
+      name="@block-template"
+      />
+  
+  <plone:service
+      method="DELETE"
+        for="plone.app.layout.navigation.interfaces.INavigationRoot"
+      factory=".services.DeleteBlockTemplate"
+      permission="cmf.ManagePortal"
+      layer="collective.voltoeditortemplates.interfaces.IVoltoEditorTemplatesLayer"
+      name="@block-template"
+      />
+  <plone:service
+      method="PATCH"  
+      for="plone.app.layout.navigation.interfaces.INavigationRoot"
+      factory=".services.UpdateBlockTemplate"
+      permission="cmf.ManagePortal"
+      layer="collective.voltoeditortemplates.interfaces.IVoltoEditorTemplatesLayer"
+      name="@block-template"
+      />
+</configure>

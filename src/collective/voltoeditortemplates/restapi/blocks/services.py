@@ -1,19 +1,19 @@
-from plone.restapi.services import Service
-from zExceptions import NotFound
-from zope.interface import alsoProvides
-from plone.protect.interfaces import IDisableCSRFProtection
 from AccessControl import Unauthorized
-from collective.voltoeditortemplates.interfaces import (
-    IVoltoEditorTemplatesStore,
-)
+from collective.voltoeditortemplates.interfaces import IVoltoEditorTemplatesStore
 from copy import deepcopy
 from plone import api
+from plone.protect.interfaces import IDisableCSRFProtection
 from plone.restapi.batching import HypermediaBatch
+from plone.restapi.deserializer import json_body
 from plone.restapi.search.utils import unflatten_dotted_dict
 from plone.restapi.serializer.converters import json_compatible
-from zope.component import getUtility
-from plone.restapi.deserializer import json_body
+from plone.restapi.services import Service
 from zExceptions import BadRequest
+from zExceptions import NotFound
+from zope.component import getUtility
+from zope.interface import alsoProvides
+from zope.interface import implementer
+from zope.publisher.interfaces import IPublishTraverse
 
 
 DEFAULT_SORT_KEY = "name"
@@ -23,6 +23,7 @@ class BlocksTemplatesService(Service):
     def __init__(self, context, request):
         super().__init__(context, request)
         self.params = []
+        self.store = IVoltoEditorTemplatesStore
 
     def can_delete_templates(self):
         return api.user.has_permission(
@@ -36,7 +37,6 @@ class AddBlockTemplate(BlocksTemplatesService):
     def __init__(self, context, request):
         super().__init__(context, request)
         self.params = []
-        self.store = IVoltoEditorTemplatesStore
 
     def validate_form(self, form_data):
         """
@@ -45,9 +45,7 @@ class AddBlockTemplate(BlocksTemplatesService):
         for field in ["id", "config"]:
             value = form_data.get(field, "")
             if not value:
-                raise BadRequest(
-                    "Campo obbligatorio mancante: {}".format(field)
-                )
+                raise BadRequest(f"Campo obbligatorio mancante: {field}")
 
     def reply(self):
         alsoProvides(
@@ -79,6 +77,7 @@ class AddBlockTemplate(BlocksTemplatesService):
         )
 
 
+@implementer(IPublishTraverse)
 class GetBlockTemplates(BlocksTemplatesService):
     """Recupera la lista di tutti i template,
     con possibilità di ricerca per titolo"""
@@ -86,7 +85,11 @@ class GetBlockTemplates(BlocksTemplatesService):
     def __init__(self, context, request):
         super().__init__(context, request)
         self.params = []
-        self.store = IVoltoEditorTemplatesStore
+
+    def publishTraverse(self, request, uid):
+        # Consume any path segments after /@users as parameters
+        self.params.append(uid)
+        return self
 
     def reply(self):
         if self.params:
@@ -107,6 +110,20 @@ class GetBlockTemplates(BlocksTemplatesService):
 
         data["actions"] = {"can_delete_templates": self.can_delete_templates()}
         return data
+
+    def get_template(self, uid):
+        tool = getUtility(IVoltoEditorTemplatesStore)
+        return [
+            {
+                "id": record._attrs.get("id", ""),
+                "date": record._attrs.get("date", ""),
+                "config": record._attrs.get("config", ""),
+                "name": record._attrs.get("name", ""),
+                "uid": record.intid,
+            }
+            for record in tool.search()
+            if record.intid == int(uid)
+        ]
 
     def fix_fields(self, data):
         """
@@ -141,7 +158,7 @@ class GetBlockTemplates(BlocksTemplatesService):
                 {
                     "id": record._attrs.get("id", ""),
                     "date": record._attrs.get("date", ""),
-                    "config": record._attrs.get("comment", ""),
+                    "config": record._attrs.get("config", ""),
                     "name": name,
                     "uid": record.intid,
                 }
@@ -164,7 +181,6 @@ class GetBlockTemplates(BlocksTemplatesService):
             query_res = tool.search()
 
         for template in query_res:
-
             uid = template.intid
 
             if uid not in templates:
@@ -191,7 +207,6 @@ class UpdateBlockTemplate(BlocksTemplatesService):
     def __init__(self, context, request):
         super().__init__(context, request)
         self.params = []
-        self.store = IVoltoEditorTemplatesStore
 
     def reply(self):
         alsoProvides(self.request, IDisableCSRFProtection)
@@ -221,7 +236,6 @@ class DeleteBlockTemplate(BlocksTemplatesService):
     def __init__(self, context, request):
         super().__init__(context, request)
         self.params = []
-        self.store = IVoltoEditorTemplatesStore
 
     def reply(self):
         if not self.can_delete_templates():

@@ -1,9 +1,10 @@
-import pytest
-import json
 from plone import api
-from plone.restapi.testing import RelativeSession
 from plone.app.testing import SITE_OWNER_NAME
 from plone.app.testing import SITE_OWNER_PASSWORD
+from plone.restapi.testing import RelativeSession
+
+import json
+import pytest
 
 
 @pytest.fixture()
@@ -72,9 +73,8 @@ class TestBlockTemplateServices:
 
         assert response.status_code == 401  # Forbidden
 
-        assert (
-            "You are not authorized to access this resource."
-            == response.json().get("message", "")
+        assert "You are not authorized to access this resource." == response.json().get(
+            "message", ""
         )
 
     def test_update_block_template_unauth(self):
@@ -88,14 +88,14 @@ class TestBlockTemplateServices:
 
         assert response.status_code == 401  # Forbidden
 
-        assert (
-            "You are not authorized to access this resource."
-            == response.json().get("message", "")
+        assert "You are not authorized to access this resource." == response.json().get(
+            "message", ""
         )
 
     def test_get_block_templates(self):
         """Test retrieval of block templates."""
-        self.test_add_block_template()  # Add a template before testing retrieval
+        # Add a template before testing retrieval
+        self.test_add_block_template()
 
         response = self.api_session.get(self.endpoint)
 
@@ -107,7 +107,8 @@ class TestBlockTemplateServices:
 
     def test_search_template_by_name(self):
         """Test searching for a template by name."""
-        self.test_add_block_template()  # Add a template before testing retrieval
+        # Add a template before testing retrieval
+        self.test_add_block_template()
         response = self.api_session.get(self.endpoint, params={"name": "Test"})
         assert response.status_code == 200
 
@@ -120,7 +121,8 @@ class TestBlockTemplateServices:
 
     def test_update_block_template(self):
         """Test updating a block template."""
-        self.test_add_block_template()  # Add a template before testing the update
+        # Add a template before testing the update
+        self.test_add_block_template()
         template_uid = self.get_first_template_uid()
 
         updated_data = {
@@ -144,7 +146,8 @@ class TestBlockTemplateServices:
 
     def test_delete_block_template(self, portal):
         """Test deletion of a block template."""
-        self.test_add_block_template()  # Add a template before testing deletion
+        # Add a template before testing deletion
+        self.test_add_block_template()
         template_uid = self.get_first_template_uid()
 
         response = self.api_session.delete(
@@ -162,7 +165,8 @@ class TestBlockTemplateServices:
 
     def test_delete_template_unauth(self):
         """Test that a user without permissions cannot delete a template."""
-        self.test_add_block_template()  # Add a template before testing deletion
+        # Add a template before testing deletion
+        self.test_add_block_template()
         template_uid = self.get_first_template_uid()
         # Simula l'autenticazione dell'utente regolare
         self.api_session.auth = (self.regular_user.getId(), "password")
@@ -175,9 +179,8 @@ class TestBlockTemplateServices:
 
         assert response.status_code == 401  # Forbidden
 
-        assert (
-            "You are not authorized to access this resource."
-            == response.json().get("message", "")
+        assert "You are not authorized to access this resource." == response.json().get(
+            "message", ""
         )
 
     def get_first_template_uid(self):

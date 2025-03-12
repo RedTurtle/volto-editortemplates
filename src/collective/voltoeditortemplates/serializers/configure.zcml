@@ -6,5 +6,9 @@
       factory=".summary.JSONSummarySerializerMetadata"
       name="collective.voltoeditortemplates.summary_serializer_metadata"
       />
+  <subscriber
+      factory=".blocks.BlockTemplateSerializer"
+      provides="plone.restapi.interfaces.IBlockFieldSerializationTransformer"
+      />
 
 </configure>

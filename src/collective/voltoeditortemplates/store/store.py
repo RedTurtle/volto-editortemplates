@@ -45,9 +45,7 @@ class VoltoEditorTemplatesStore(object):
 
     def get(self, template_id):
         """Recupera un template dato il suo ID"""
-        records = [
-            r for r in self.soup.query() if r.attrs.get("id") == template_id
-        ]
+        records = [r for r in self.soup.query() if r.attrs.get("id") == template_id]
         return records[0].attrs if records else None
 
     def update(self, template_id, data):
@@ -55,9 +53,7 @@ class VoltoEditorTemplatesStore(object):
         try:
             record = self.soup.get(template_id)
         except KeyError:
-            logger.error(
-                '[UPDATE] item with id "{}" not found.'.format(template_id)
-            )
+            logger.error('[UPDATE] item with id "{}" not found.'.format(template_id))
             return {"error": "NotFound"}
         for k, v in data.items():
             if k not in self.fields:
@@ -72,9 +68,7 @@ class VoltoEditorTemplatesStore(object):
         """Elimina un template"""
         record = self.soup.get(template_id)
         if not record:
-            logger.error(
-                f"[DELETE] Template con id {template_id} non trovato."
-            )
+            logger.error(f"[DELETE] Template con id {template_id} non trovato.")
             return {"error": "NotFound"}
 
         del self.soup[record]

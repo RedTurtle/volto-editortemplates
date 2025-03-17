@@ -1,0 +1,46 @@
+image: python:3.11
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache"
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+    - venv/
+    - downloads/
+    - eggs/
+
+# Set execution order: first run jobs on 'test' stage on parallel
+# then run jobs on 'report' stage
+stages:
+  - release
+
+before_script:
+  - pip install virtualenv
+  - export LC_CTYPE=C.UTF-8
+  - export LC_ALL=C.UTF-8
+  - export LANG=C.UTF-8
+  - virtualenv --clear -p python3.11 venv
+  - source venv/bin/activate
+
+release:
+  stage: release
+  before_script: []
+  script:
+    - python -V
+    - pip install virtualenv
+    - virtualenv venv
+    - source venv/bin/activate
+    - pip install check-manifest twine
+    - check-manifest
+    - python setup.py sdist bdist_wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url https://gitlab.com/api/v4/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+  only:
+    - tags

@@ -14,7 +14,7 @@ long_description = f"""
 
 setup(
     name="collective.voltoeditortemplates",
-    version="1.0.1.dev0",
+    version="1.0a1",
     description="A new addon for Plone",
     long_description=long_description,
     long_description_content_type="text/markdown",

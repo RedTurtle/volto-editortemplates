@@ -8,3 +8,7 @@
 -->
 
 <!-- towncrier release notes start -->
+
+## 1.0.0 (2025-03-17)
+
+No significant changes.

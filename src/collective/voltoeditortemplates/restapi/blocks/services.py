@@ -17,6 +17,7 @@ from zope.component import getUtility
 from zope.interface import alsoProvides
 from zope.interface import implementer
 from zope.publisher.interfaces import IPublishTraverse
+from copy import deepcopy
 
 
 DEFAULT_SORT_KEY = "name"
@@ -187,7 +188,7 @@ class GetBlockTemplates(BlocksTemplatesService):
         templates = []
 
         for record in results:
-            config = record._attrs.get("config", "")
+            config = deepcopy(record._attrs.get("config", ""))
             original_blocks = config.get("blocks", {})
             serialized_blocks = self.serialize_blocks(original_blocks)
 

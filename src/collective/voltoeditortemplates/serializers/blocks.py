@@ -6,6 +6,7 @@ from zope.component import adapter
 from zope.component import getUtility
 from zope.interface import implementer
 from zope.publisher.interfaces.browser import IBrowserRequest
+from copy import deepcopy
 
 
 @implementer(IBlockFieldSerializationTransformer)
@@ -23,22 +24,27 @@ class BlockTemplateSerializer:
         tool = getUtility(IVoltoEditorTemplatesStore)
         for record in tool.search():
             if record.intid == int(uid):
-                return record._attrs.get("config", None)
-
+                soup_record_config = record._attrs.get("config", None)
+                return deepcopy(soup_record_config)
         return None
 
-    def serialize(self, blocks, results):
-        res = results.copy()
+    def serialize(self, blocks):
+        """
+        blocks: dizionario dei blocchi da trasformare. sarà sempre uno.
+        """
+        # res = results.copy()
         for block in blocks.values():
+            new_block = block.copy()
             handlers = iter_block_transform_handlers(
                 self.context,
                 block,
                 IBlockFieldSerializationTransformer,
             )
             for h in handlers:
-                res = h(block)
-
-        return res
+                new_block = h(new_block)
+            block.clear()
+            block.update(new_block)
+        return blocks
 
     def __call__(self, block):
         if not block.get("uid", None):
@@ -77,7 +83,8 @@ class BlockTemplateSerializer:
 
         # for h in handlers:
         #     result = h(block_data)
-        result = self.serialize(result.get("blocks"), result)
+        # passiamo soltanto i blocchi che dobbiamo 'ripassare'
+        result = self.serialize(result.get("blocks"))
         block.update({"config": result})
 
         return block

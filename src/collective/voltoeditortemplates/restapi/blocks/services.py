@@ -4,7 +4,10 @@ from copy import deepcopy
 from plone import api
 from plone.protect.interfaces import IDisableCSRFProtection
 from plone.restapi.batching import HypermediaBatch
+from plone.restapi.blocks import iter_block_transform_handlers
 from plone.restapi.deserializer import json_body
+from plone.restapi.interfaces import IBlockFieldDeserializationTransformer
+from plone.restapi.interfaces import IBlockFieldSerializationTransformer
 from plone.restapi.search.utils import unflatten_dotted_dict
 from plone.restapi.serializer.converters import json_compatible
 from plone.restapi.services import Service
@@ -29,6 +32,33 @@ class BlocksTemplatesService(Service):
         return api.user.has_permission(
             "collective.voltoeditortemplates: Delete Templates"
         )
+
+    def deserialize_blocks(self, blocks):
+        for block in blocks.values():
+            new_block = block.copy()
+            for handler in iter_block_transform_handlers(
+                self.context, block, IBlockFieldDeserializationTransformer
+            ):
+                new_block = handler(new_block)
+                print(new_block)
+            block.clear()
+            block.update(new_block)
+
+        return blocks
+
+    def serialize_blocks(self, blocks):
+        res = {}
+        for block in blocks.values():
+            handlers = iter_block_transform_handlers(
+                self.context,
+                block,
+                IBlockFieldSerializationTransformer,
+            )
+            for h in handlers:
+                res = h(block)
+                print(res)
+
+        return res
 
 
 class AddBlockTemplate(BlocksTemplatesService):
@@ -153,12 +183,25 @@ class GetBlockTemplates(BlocksTemplatesService):
             return results
 
         templates = []
+
         for record in results:
+            config = record._attrs.get("config", "")
+            original_blocks = config.get("blocks", {})
+            serialized_blocks = self.serialize_blocks(original_blocks)
+
+            config_blocks = {
+                key: serialized_blocks.get(key, value)
+                for key, value in original_blocks.items()
+            }
+
             templates.append(
                 {
                     "id": record._attrs.get("id", ""),
                     "date": record._attrs.get("date", ""),
-                    "config": record._attrs.get("config", ""),
+                    "config": {
+                        **record.a.get("config", {}),
+                        "blocks": config_blocks,
+                    },
                     "name": name,
                     "uid": record.intid,
                 }
@@ -196,7 +239,26 @@ class GetBlockTemplates(BlocksTemplatesService):
 
                 templates[uid] = new_data
 
-        result = list(templates.values())
+        result = []
+
+        for res in list(templates.values()):
+            original_blocks = res.get("config", {}).get("blocks", {})
+            serialized_blocks = self.serialize_blocks(original_blocks)
+
+            config_blocks = {
+                key: serialized_blocks.get(key, value)
+                for key, value in original_blocks.items()
+            }
+
+            result.append(
+                {
+                    **res,
+                    "config": {
+                        **res.get("config", {}),
+                        "blocks": config_blocks,
+                    },
+                }
+            )
 
         return self.sort_result(result)
 
@@ -216,6 +278,11 @@ class UpdateBlockTemplate(BlocksTemplatesService):
         if not template_id:
             raise NotFound("Template not found")
         store = getUtility(self.store)
+
+        # Apply deserialization to the incoming template data
+        original_blocks = json_data.get("config", {}).get("blocks", {})
+        deserialized_blocks = self.deserialize_blocks(original_blocks)
+        json_data["config"]["blocks"] = deserialized_blocks
 
         result = store.update(template_id, json_data)
         if result is None:

@@ -49,16 +49,18 @@ class BlocksTemplatesService(Service):
     def serialize_blocks(self, blocks):
         res = {}
         for block in blocks.values():
+            new_block = block.copy()
             handlers = iter_block_transform_handlers(
                 self.context,
                 block,
                 IBlockFieldSerializationTransformer,
             )
             for h in handlers:
-                res = h(block)
-                print(res)
-
-        return res
+                new_block = h(new_block)
+                # print(res)
+            block.clear()            
+            block.update(new_block)
+        return blocks
 
 
 class AddBlockTemplate(BlocksTemplatesService):
@@ -278,7 +280,7 @@ class UpdateBlockTemplate(BlocksTemplatesService):
         if not template_id:
             raise NotFound("Template not found")
         store = getUtility(self.store)
-
+        
         # Apply deserialization to the incoming template data
         original_blocks = json_data.get("config", {}).get("blocks", {})
         deserialized_blocks = self.deserialize_blocks(original_blocks)

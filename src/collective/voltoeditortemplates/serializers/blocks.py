@@ -1,4 +1,5 @@
 from collective.voltoeditortemplates.interfaces import IVoltoEditorTemplatesStore
+from copy import deepcopy
 from plone.restapi.behaviors import IBlocks
 from plone.restapi.blocks import iter_block_transform_handlers
 from plone.restapi.interfaces import IBlockFieldSerializationTransformer
@@ -6,7 +7,6 @@ from zope.component import adapter
 from zope.component import getUtility
 from zope.interface import implementer
 from zope.publisher.interfaces.browser import IBrowserRequest
-from copy import deepcopy
 
 
 @implementer(IBlockFieldSerializationTransformer)
@@ -33,7 +33,6 @@ class BlockTemplateSerializer:
         blocks: dizionario dei blocchi da trasformare. sarà sempre uno.
         """
         results = {}
-
         for key, block in blocks.items():
             new_block = deepcopy(block)  # Copia profonda per evitare riferimenti
             handlers = iter_block_transform_handlers(

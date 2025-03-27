@@ -41,10 +41,100 @@ def test_block_serializer_valid_uid(mock_context, mock_request, mock_store):
     with patch("zope.component.getUtility", return_value=mock_store):
         serializer = BlockTemplateSerializer(mock_context, mock_request)
         block = {"uid": 123}
+        block = {
+            "config": {
+                "d02dc1ab-f38c-40b9-9199-746fb7359060": {
+                    "@type": "teaser",
+                    "ctaButtonStyle": "simple",
+                    "cta_color": "white",
+                    "description": "Product description",
+                    "head_title": None,
+                    "href": [
+                        {
+                            "@id": "http://localhost:3000/products/management-operations/conqueror-x",
+                            "@type": "Product",
+                            "Description": "Product description",
+                            "Subject": [],
+                            "Title": "Conqueror XYZ",
+                            "bowling_center_products": None,
+                            "bowling_center_region": None,
+                            "bowling_center_type": None,
+                            "description": "Product description",
+                            "effective": "2025-01-14T09:02:10+00:00",
+                            "exclude_from_nav": False,
+                            "hasPreviewImage": True,
+                            "head_title": None,
+                            "id": "conqueror-x",
+                            "lanesnr": None,
+                            "review_state": "published",
+                            "title": "Conqueror X",
+                            "type_title": "Product",
+                            "video_file": None,
+                            "video_url": None,
+                        }
+                    ],
+                    "linkIcon": "",
+                    "linkTitle": "",
+                    "overwrite": False,
+                    "styles": {
+                        "align": "left",
+                        "bg": "white",
+                        "cardBg": "white",
+                        "line_color": "red",
+                        "title_color": "black",
+                    },
+                    "title": "Conqueror X",
+                }
+            }
+        }
         result = serializer(block)
 
         assert "config" in result
-        assert result["config"] == {"some": "config"}
+
+        assert result["config"] == {
+            "d02dc1ab-f38c-40b9-9199-746fb7359060": {
+                "@type": "teaser",
+                "ctaButtonStyle": "simple",
+                "cta_color": "white",
+                "description": "Product description",
+                "head_title": None,
+                "href": [
+                    {
+                        "@id": "http://localhost:3000/products/management-operations/conqueror-x",
+                        "@type": "Product",
+                        "Description": "Product description",
+                        "Subject": [],
+                        "Title": "Conqueror XYZ",
+                        "bowling_center_products": None,
+                        "bowling_center_region": None,
+                        "bowling_center_type": None,
+                        "description": "Product description",
+                        "effective": "2025-01-14T09:02:10+00:00",
+                        "exclude_from_nav": False,
+                        "hasPreviewImage": True,
+                        "head_title": None,
+                        "id": "conqueror-x",
+                        "lanesnr": None,
+                        "review_state": "published",
+                        "title": "Conqueror X",
+                        "type_title": "Product",
+                        "video_file": None,
+                        "video_url": None,
+                    }
+                ],
+                "linkIcon": "",
+                "linkTitle": "",
+                "overwrite": False,
+                "styles": {
+                    "align": "left",
+                    "bg": "white",
+                    "cardBg": "white",
+                    "line_color": "red",
+                    "title_color": "black",
+                },
+                "title": "Conqueror X",
+            }
+        }
 
 
 def test_block_serializer_missing_uid(mock_context, mock_request):

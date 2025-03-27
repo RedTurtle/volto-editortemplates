@@ -32,9 +32,10 @@ class BlockTemplateSerializer:
         """
         blocks: dizionario dei blocchi da trasformare. sarà sempre uno.
         """
-        # res = results.copy()
-        for block in blocks.values():
-            new_block = block.copy()
+        results = {}
+
+        for key, block in blocks.items():
+            new_block = deepcopy(block)  # Copia profonda per evitare riferimenti
             handlers = iter_block_transform_handlers(
                 self.context,
                 block,
@@ -42,9 +43,9 @@ class BlockTemplateSerializer:
             )
             for h in handlers:
                 new_block = h(new_block)
-            block.clear()
-            block.update(new_block)
-        return blocks
+            results[key] = new_block
+
+        return results
 
     def __call__(self, block):
         if not block.get("uid", None):

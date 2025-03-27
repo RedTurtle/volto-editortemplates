@@ -1,24 +1,24 @@
-from AccessControl import Unauthorized
-from collective.voltoeditortemplates.interfaces import IVoltoEditorTemplatesStore
 from copy import deepcopy
+
+from AccessControl import Unauthorized
 from plone import api
 from plone.protect.interfaces import IDisableCSRFProtection
 from plone.restapi.batching import HypermediaBatch
 from plone.restapi.blocks import iter_block_transform_handlers
 from plone.restapi.deserializer import json_body
-from plone.restapi.interfaces import IBlockFieldDeserializationTransformer
-from plone.restapi.interfaces import IBlockFieldSerializationTransformer
+from plone.restapi.interfaces import (
+    IBlockFieldDeserializationTransformer,
+    IBlockFieldSerializationTransformer,
+)
 from plone.restapi.search.utils import unflatten_dotted_dict
 from plone.restapi.serializer.converters import json_compatible
 from plone.restapi.services import Service
-from zExceptions import BadRequest
-from zExceptions import NotFound
+from zExceptions import BadRequest, NotFound
 from zope.component import getUtility
-from zope.interface import alsoProvides
-from zope.interface import implementer
+from zope.interface import alsoProvides, implementer
 from zope.publisher.interfaces import IPublishTraverse
-from copy import deepcopy
 
+from collective.voltoeditortemplates.interfaces import IVoltoEditorTemplatesStore
 
 DEFAULT_SORT_KEY = "name"
 
@@ -48,9 +48,10 @@ class BlocksTemplatesService(Service):
         return blocks
 
     def serialize_blocks(self, blocks):
-        res = {}
-        for block in blocks.values():
-            new_block = block.copy()
+        results = {}
+
+        for key, block in blocks.items():
+            new_block = deepcopy(block)
             handlers = iter_block_transform_handlers(
                 self.context,
                 block,
@@ -58,10 +59,9 @@ class BlocksTemplatesService(Service):
             )
             for h in handlers:
                 new_block = h(new_block)
-                # print(res)
-            block.clear()            
-            block.update(new_block)
-        return blocks
+            results[key] = new_block
+
+        return results
 
 
 class AddBlockTemplate(BlocksTemplatesService):
@@ -146,17 +146,21 @@ class GetBlockTemplates(BlocksTemplatesService):
 
     def get_template(self, uid):
         tool = getUtility(IVoltoEditorTemplatesStore)
-        return [
+        blocks = [
             {
                 "id": record._attrs.get("id", ""),
                 "date": record._attrs.get("date", ""),
-                "config": record._attrs.get("config", ""),
+                "config": self.serialize_blocks(
+                    deepcopy(record._attrs.get("config", "").get("blocks", {}))
+                ),
+                # "config": record._attrs.get("config", ""),
                 "name": record._attrs.get("name", ""),
                 "uid": record.intid,
             }
             for record in tool.search()
             if record.intid == int(uid)
         ]
+        return blocks
 
     def fix_fields(self, data):
         """
@@ -281,7 +285,7 @@ class UpdateBlockTemplate(BlocksTemplatesService):
         if not template_id:
             raise NotFound("Template not found")
         store = getUtility(self.store)
-        
+
         # Apply deserialization to the incoming template data
         original_blocks = json_data.get("config", {}).get("blocks", {})
         deserialized_blocks = self.deserialize_blocks(original_blocks)

@@ -9,6 +9,12 @@
 
 <!-- towncrier release notes start -->
 
+## 1.0a3 (unreleased)
+
+
+- Nothing changed yet.
+
+
 ## 1.0a1 (2025-03-17)
 
 No significant changes.

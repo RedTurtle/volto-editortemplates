@@ -9,7 +9,7 @@
 
 <!-- towncrier release notes start -->
 
-## 1.0a3 (unreleased)
+## 1.0a3 (2025-04-30)
 
 
 - Nothing changed yet.
